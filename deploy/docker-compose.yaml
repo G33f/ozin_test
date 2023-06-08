@@ -29,6 +29,8 @@ services:
   short_url:
     container_name: short_url_container
     build: ../short_url/
+    environment:
+      - STORAGE_TYPE
     restart: on-failure
     depends_on:
       - postgres

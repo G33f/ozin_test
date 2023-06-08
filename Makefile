@@ -7,9 +7,13 @@ DEPLOY_PATH=./deploy
 .PHONY: all
 all: compose-up
 
-.PHONY: compose-up
-compose-up:
-	$(DC) -f $(DEPLOY_PATH)/docker-compose.yaml up
+.PHONY: compose-up-in-memory
+compose-up-in-memory:
+	 STORAGE_TYPE=InMemory $(DC) -f $(DEPLOY_PATH)/docker-compose.yaml up
+
+.PHONY: compose-up-postgresql
+compose-up-postgresql:
+	STORAGE_TYPE=PostgreSQL $(DC) -f $(DEPLOY_PATH)/docker-compose.yaml up
 
 .PHONY: compose-start
 compose-start:

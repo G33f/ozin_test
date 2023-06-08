@@ -6,7 +6,6 @@ import (
 	"ShortURL/internal/storage"
 	"ShortURL/internal/utils"
 	"context"
-	"fmt"
 )
 
 const repoError = "repo error: "
@@ -37,10 +36,12 @@ func (r *repo) GetURL(ctx context.Context, shortURL string) (string, error) {
 			  where urls.short_url = $1;`
 	q = utils.FormatQuery(q)
 	err := r.client.QueryRow(ctx, q, shortURL).Scan(&url)
-	if err == fmt.Errorf(notFind) {
-		return "", nil
+	if err != nil {
+		if err.Error() == notFind {
+			return "", nil
+		}
 	}
-	return url, err
+	return url, nil
 }
 
 func NewRepo(client storage.Client, log *logging.Logger) shortener.Repo {

@@ -1,11 +1,9 @@
 APIServer:
-  host: "localhost"
-#  host: "0.0.0.0"
+  host: "0.0.0.0"
   port: "8080"
 
 ShortURLStorage:
-  host: "localhost"
-#  host: "postgres"
+  host: "postgres"
   port: "5432"
   database: "short_url"
   username: "admin"

@@ -35,7 +35,7 @@ func (uc *useCase) MakeURLShorter(ctx context.Context, url string) (string, erro
 	}
 	shortURL, err := uc.generateUniqueHash(ctx, url)
 	if err != nil {
-		if err != fmt.Errorf(exist) {
+		if err.Error() != exist {
 			return "", err
 		} else {
 			return shortURL, nil

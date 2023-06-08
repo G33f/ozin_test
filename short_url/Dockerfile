@@ -9,5 +9,6 @@ WORKDIR /root
 COPY --from=builder build/short-url ./
 COPY --from=builder build/config/config.yml ./config/
 #CMD["./short-url"]
-CMD ./short-url -storage_type=PostgreSQL
+ARG STORAGE_TYPE
+CMD ./short-url -storage_type=$STORAGE_TYPE
 EXPOSE 8080
