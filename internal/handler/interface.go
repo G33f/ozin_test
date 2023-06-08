@@ -1,7 +1,7 @@
-package shortener
+package handler
 
 import (
-	"ShortURL/internal/shortener/model"
+	"ShortURL/internal/model"
 	"context"
 )
 

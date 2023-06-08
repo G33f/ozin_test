@@ -2,6 +2,8 @@ DC=docker-compose
 
 DEPLOY_PATH=./deploy
 
+MOCKS_DESTINATION=mocks
+
 .PHONY: all
 all: compose-up-postgresql
 
@@ -25,3 +27,12 @@ compose-stop:
 compose-down:
 	$(DC) -f $(DEPLOY_PATH)/docker-compose.yaml down
 	docker rmi deploy-short_url
+
+.PHONY: proto-gen
+proto-gen:
+	protoc --go_out=. --go-grpc_out=require_unimplemented_servers=false:. proto/shortener.proto
+
+.PHONY: mocks
+mocks:
+	rm -rf $(MOCKS_DESTINATION)
+	mockgen -source=internal/repo/interface.go -destination=mocks/mock_repo/mock_repo.go

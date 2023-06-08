@@ -2,16 +2,17 @@ package usecase
 
 import (
 	"ShortURL/internal/logging"
-	"ShortURL/internal/shortener"
+	"ShortURL/internal/repo"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 )
 
 type useCase struct {
-	repo   shortener.Repo
+	repo   repo.Repo
 	logger *logging.Logger
 }
 
@@ -20,19 +21,19 @@ const (
 	charset    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
 )
 
-const (
-	emptyURL        = "empty URL"
-	URLDoesNotExist = "URL does not exist"
-	exist           = "URL all ready exist"
+var (
+	errEmptyURL        = errors.New("empty URL")
+	errURLDoesNotExist = errors.New("URL does not exist")
+	errExist           = errors.New("URL all ready exist")
 )
 
 func (uc *useCase) MakeURLShorter(ctx context.Context, url string) (string, error) {
 	if url == "" {
-		return "", fmt.Errorf(emptyURL)
+		return "", errEmptyURL
 	}
 	shortURL, err := uc.generateUniqueHash(ctx, url)
 	if err != nil {
-		if err.Error() != exist {
+		if !errors.Is(err, errExist) {
 			return "", err
 		} else {
 			return shortURL, nil
@@ -50,8 +51,7 @@ func (uc *useCase) GetOriginalURL(ctx context.Context, shortURL string) (string,
 		return "", err
 	}
 	if url == "" {
-		err = fmt.Errorf(URLDoesNotExist)
-		return "", err
+		return "", errURLDoesNotExist
 	}
 	return url, nil
 }
@@ -71,7 +71,7 @@ func (uc *useCase) generateUniqueHash(ctx context.Context, url string) (string, 
 			return hash, nil
 		}
 		if retURL == url {
-			return hash, fmt.Errorf(exist)
+			return hash, errEmptyURL
 		}
 	}
 }
@@ -97,7 +97,7 @@ func (uc *useCase) filterCharacters(str string, allowedChars string) string {
 	return filtered
 }
 
-func NewUseCase(repo shortener.Repo, log *logging.Logger, inMemory bool) shortener.UseCase {
+func NewUseCase(repo repo.Repo, log *logging.Logger, inMemory bool) UseCase {
 	uc := &useCase{
 		repo:   repo,
 		logger: log,

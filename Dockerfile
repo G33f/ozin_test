@@ -1,6 +1,6 @@
 FROM golang:latest AS builder
 WORKDIR /build
-COPY ./ ./
+COPY . ./
 CMD ["make proto-gen"]
 RUN CGO_ENABLED=0 go build -o short-url cmd/api/main.go
 

@@ -21,6 +21,6 @@
 go.work
 
 # log dir
-short_url/logs
+logs
 
 .idea

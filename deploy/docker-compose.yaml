@@ -28,7 +28,7 @@ services:
 
   short_url:
     container_name: short_url_container
-    build: ../short_url/
+    build: ../
     environment:
       - STORAGE_TYPE
     restart: on-failure

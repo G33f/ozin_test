@@ -11,14 +11,24 @@ func main() {
 	log := logging.GetLogger()
 
 	// Read all configurations from the yaml config file using the viper module
-	config.GetConfigs()
+	err := config.GetConfigs()
+	if err != nil {
+		return
+	}
 
 	// Create and initialize API structure with all dependencies
 	log.Info("api initialization ...")
 	API := api.NewApi(&log)
-	API.Init()
+	err = API.Init()
+	if err != nil {
+		return
+	}
+
 	log.Info("api initialized")
 	//Start our API
 	log.Info("api Running...")
-	API.Start()
+	err = API.Start()
+	if err != nil {
+		return
+	}
 }

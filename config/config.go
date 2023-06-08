@@ -14,12 +14,13 @@ func init() {
 
 var once sync.Once
 
-func GetConfigs() {
+func GetConfigs() (err error) {
 	once.Do(func() {
 		logger := logging.GetLogger()
-		err := viper.ReadInConfig()
+		err = viper.ReadInConfig()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Error(err)
 		}
 	})
+	return err
 }

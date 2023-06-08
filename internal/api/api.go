@@ -1,22 +1,20 @@
 package api
 
 import (
+	shortUrlHandler "ShortURL/internal/handler"
 	"ShortURL/internal/logging"
-	"ShortURL/internal/shortener"
-	shortenerHandler "ShortURL/internal/shortener/handler"
-	"ShortURL/internal/shortener/model"
-	shortenerRepo "ShortURL/internal/shortener/repo"
-	shortenerUseCase "ShortURL/internal/shortener/usecase"
-	"ShortURL/internal/storage"
+	"ShortURL/internal/model"
+	"ShortURL/internal/postgres"
+	shortUrlRepo "ShortURL/internal/repo"
+	shortUrlUseCase "ShortURL/internal/usecase"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
-	"sync"
 )
 
 const (
@@ -31,15 +29,13 @@ const (
 type API struct {
 	server   *grpc.Server
 	listener *net.Listener
-	repo     *pgxpool.Pool
 
 	inMemory bool
 
 	log *logging.Logger
 }
 
-func (api *API) Init() {
-	var err error
+func (api *API) Init() (err error) {
 	ctx := context.Background()
 	api.checkFlag()
 	address := fmt.Sprintf("%s:%s",
@@ -47,32 +43,37 @@ func (api *API) Init() {
 		viper.GetString("APIServer.port"))
 	lis, err := net.Listen(connectionType, address)
 	if err != nil {
-		api.log.Fatalf("failed to listen: %v", err)
+		api.log.Error("failed to listen: %v", err)
+		return err
 	}
 	api.server = grpc.NewServer()
 	api.listener = &lis
-	var repo shortener.Repo
-	if !api.inMemory {
-		api.repo, err = storage.NewStorage(ctx, api.log)
-		if err != nil {
-			api.log.Fatal(err)
-		}
-		repo = shortenerRepo.NewPostgresRepo(api.repo, api.log)
+	var repo shortUrlRepo.Repo
+	if api.inMemory {
+		repo = shortUrlRepo.NewInMemoryRepo(api.log)
 	} else {
-		mut := sync.RWMutex{}
-		repo = shortenerRepo.NewInMemoryRepo(api.log, &mut)
+		connDB, err := postgres.NewClient(ctx, api.log)
+		if err != nil {
+			api.log.Error(err)
+			return err
+		}
+		repo = shortUrlRepo.NewPostgresRepo(connDB)
 	}
-	useCase := shortenerUseCase.NewUseCase(repo, api.log, api.inMemory)
-	handler := shortenerHandler.NewHandler(useCase, api.log)
+	useCase := shortUrlUseCase.NewUseCase(repo, api.log, api.inMemory)
+	handler := shortUrlHandler.NewHandler(useCase, api.log)
 	model.RegisterShortURLServer(api.server, handler)
+	reflection.Register(api.server)
+	return nil
 }
 
-func (api *API) Start() {
-	reflection.Register(api.server)
+func (api *API) Start() error {
+	defer api.server.GracefulStop()
 	api.log.Info("api is ready")
 	if err := api.server.Serve(*api.listener); err != nil {
-		api.log.Fatalf("failed to serve: %v", err)
+		api.log.Errorf("failed to serve: %v", err)
+		return err
 	}
+	return nil
 }
 
 func (api *API) checkFlag() {
@@ -84,7 +85,7 @@ func (api *API) checkFlag() {
 		case "InMemory":
 			api.inMemory = true
 		default:
-			return fmt.Errorf("flag error")
+			return errors.New("flag error")
 		}
 		return nil
 	})
