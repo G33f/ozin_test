@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    environment:
+      POSTGRES_DB: "short_url"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
+    volumes:
+      - ./short_url-entrypoint.d:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d short_url" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    networks:
+      - postgres_net
+
+  short_url:
+    container_name: short_url_container
+    build: ../short_url/
+    restart: on-failure
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - postgres_net
+
+networks:
+  postgres_net:
+    driver: bridge

@@ -1,0 +1,13 @@
+syntax = "proto3";
+package model;
+
+option go_package = "internal/shortener/model/";
+
+service ShortURL {
+  rpc MakeURLShorter(URL) returns (URL) {};
+  rpc GetOriginalURL(URL) returns (URL) {};
+}
+
+message URL{
+  string url = 1;
+}

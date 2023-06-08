@@ -1,0 +1,13 @@
+APIServer:
+  host: "localhost"
+#  host: "0.0.0.0"
+  port: "8080"
+
+ShortURLStorage:
+  host: "localhost"
+#  host: "postgres"
+  port: "5432"
+  database: "short_url"
+  username: "admin"
+  password: "admin"
+  maxAttempt: 5
