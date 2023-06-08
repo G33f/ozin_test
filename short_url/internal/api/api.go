@@ -2,6 +2,7 @@ package api
 
 import (
 	"ShortURL/internal/logging"
+	"ShortURL/internal/shortener"
 	shortenerHandler "ShortURL/internal/shortener/handler"
 	"ShortURL/internal/shortener/model"
 	shortenerRepo "ShortURL/internal/shortener/repo"
@@ -15,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
+	"sync"
 )
 
 const (
@@ -40,12 +42,6 @@ func (api *API) Init() {
 	var err error
 	ctx := context.Background()
 	api.checkFlag()
-	if !api.inMemory {
-		api.repo, err = storage.NewStorage(ctx, api.log)
-		if err != nil {
-			api.log.Fatal(err)
-		}
-	}
 	address := fmt.Sprintf("%s:%s",
 		viper.GetString("APIServer.host"),
 		viper.GetString("APIServer.port"))
@@ -55,7 +51,17 @@ func (api *API) Init() {
 	}
 	api.server = grpc.NewServer()
 	api.listener = &lis
-	repo := shortenerRepo.NewRepo(api.repo, api.log)
+	var repo shortener.Repo
+	if !api.inMemory {
+		api.repo, err = storage.NewStorage(ctx, api.log)
+		if err != nil {
+			api.log.Fatal(err)
+		}
+		repo = shortenerRepo.NewPostgresRepo(api.repo, api.log)
+	} else {
+		mut := sync.RWMutex{}
+		repo = shortenerRepo.NewInMemoryRepo(api.log, &mut)
+	}
 	useCase := shortenerUseCase.NewUseCase(repo, api.log, api.inMemory)
 	handler := shortenerHandler.NewHandler(useCase, api.log)
 	model.RegisterShortURLServer(api.server, handler)

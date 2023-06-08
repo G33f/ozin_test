@@ -6,6 +6,6 @@ import (
 )
 
 type Handler interface {
-	MakeURLShorter(ctx context.Context, req *model.URL) (*model.URL, error)
-	GetOriginalURL(ctx context.Context, in *model.URL) (*model.URL, error)
+	MakeURLShorter(ctx context.Context, req *model.CrateRequest) (*model.CrateResponse, error)
+	GetOriginalURL(ctx context.Context, in *model.GetRequest) (*model.GetResponse, error)
 }

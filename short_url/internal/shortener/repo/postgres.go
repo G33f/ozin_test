@@ -12,12 +12,12 @@ const repoError = "repo error: "
 
 const notFind = "no rows in result set"
 
-type repo struct {
+type postgres struct {
 	client storage.Client
 	logger *logging.Logger
 }
 
-func (r *repo) AddShortURL(ctx context.Context, url string, shortURL string) error {
+func (r *postgres) AddShortURL(ctx context.Context, url string, shortURL string) error {
 	q := `insert into urls (url, short_url)
 			  values ($1, $2)
 			  returning urls.id;`
@@ -30,7 +30,7 @@ func (r *repo) AddShortURL(ctx context.Context, url string, shortURL string) err
 	return nil
 }
 
-func (r *repo) GetURL(ctx context.Context, shortURL string) (string, error) {
+func (r *postgres) GetURL(ctx context.Context, shortURL string) (string, error) {
 	var url string
 	q := `select urls.url from urls
 			  where urls.short_url = $1;`
@@ -44,8 +44,8 @@ func (r *repo) GetURL(ctx context.Context, shortURL string) (string, error) {
 	return url, nil
 }
 
-func NewRepo(client storage.Client, log *logging.Logger) shortener.Repo {
-	return &repo{
+func NewPostgresRepo(client storage.Client, log *logging.Logger) shortener.Repo {
+	return &postgres{
 		client: client,
 		logger: log,
 	}

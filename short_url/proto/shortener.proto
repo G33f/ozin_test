@@ -4,10 +4,22 @@ package model;
 option go_package = "internal/shortener/model/";
 
 service ShortURL {
-  rpc MakeURLShorter(URL) returns (URL) {};
-  rpc GetOriginalURL(URL) returns (URL) {};
+  rpc MakeURLShorter(CrateRequest) returns (CrateResponse) {};
+  rpc GetOriginalURL(GetRequest) returns (GetResponse) {};
 }
 
-message URL{
+message GetRequest{
+  string url = 1;
+}
+
+message GetResponse{
+  string url = 1;
+}
+
+message CrateRequest{
+  string url = 1;
+}
+
+message CrateResponse{
   string url = 1;
 }
