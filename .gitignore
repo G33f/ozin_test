@@ -22,3 +22,6 @@ go.work
 
 # log dir
 short_url/logs
+
+# gRPC protoc generate *.go file
+short_url/internal/shortener/model/*.go
