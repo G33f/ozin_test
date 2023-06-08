@@ -27,3 +27,5 @@ short_url/logs
 short_url/internal/shortener/model/*.go
 
 .idea
+
+short_url/mocks
