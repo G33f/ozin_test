@@ -1,11 +1,9 @@
 DC=docker-compose
 
-#SHORT_URL_PATH=./short_url
-
 DEPLOY_PATH=./deploy
 
 .PHONY: all
-all: compose-up
+all: compose-up-postgresql
 
 .PHONY: compose-up-in-memory
 compose-up-in-memory:
