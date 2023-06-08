@@ -60,6 +60,9 @@ func (uc *useCase) generateUniqueHash(ctx context.Context, url string) (string, 
 	for counter := 0; ; counter++ {
 		strWithCounter := fmt.Sprintf("%s%d", url, counter)
 		hash := uc.generateHash(strWithCounter)
+		if len(hash) < hashLength {
+			continue
+		}
 		retURL, err := uc.repo.GetURL(ctx, hash)
 		if err != nil {
 			return "", err
@@ -76,7 +79,11 @@ func (uc *useCase) generateUniqueHash(ctx context.Context, url string) (string, 
 func (uc *useCase) generateHash(str string) string {
 	hashBytes := sha256.Sum256([]byte(str))
 	hashString := base64.RawURLEncoding.EncodeToString(hashBytes[:])
-	hash := uc.filterCharacters(hashString, charset)[:hashLength]
+	tmpHash := uc.filterCharacters(hashString, charset)
+	if len(tmpHash) < hashLength {
+		return ""
+	}
+	hash := tmpHash[:hashLength]
 	return hash
 }
 

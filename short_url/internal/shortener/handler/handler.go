@@ -2,13 +2,13 @@ package handler
 
 import (
 	"ShortURL/internal/logging"
-	shortener2 "ShortURL/internal/shortener"
+	"ShortURL/internal/shortener"
 	"ShortURL/internal/shortener/model"
 	"context"
 )
 
 type handler struct {
-	useCase shortener2.UseCase
+	useCase shortener.UseCase
 	log     *logging.Logger
 }
 
@@ -28,7 +28,7 @@ func (h *handler) GetOriginalURL(ctx context.Context, in *model.GetRequest) (*mo
 	return &model.GetResponse{Url: shorter}, nil
 }
 
-func NewHandler(useCase shortener2.UseCase, log *logging.Logger) shortener2.Handler {
+func NewHandler(useCase shortener.UseCase, log *logging.Logger) shortener.Handler {
 	return &handler{
 		useCase: useCase,
 		log:     log,

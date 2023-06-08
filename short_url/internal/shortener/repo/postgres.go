@@ -40,6 +40,7 @@ func (r *postgres) GetURL(ctx context.Context, shortURL string) (string, error) 
 		if err.Error() == notFind {
 			return "", nil
 		}
+		return "", err
 	}
 	return url, nil
 }
